@@ -1,3 +1,4 @@
+//store API
 var API_quakes = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
 console.log (API_quakes)
 var API_plates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
@@ -7,7 +8,8 @@ function markerSize(magnitude) {
     return magnitude * 4;
 };
 
-
+//get request
+//creating features
 var earthquakes = new L.LayerGroup();
 
 d3.json(API_quakes, function (geoJson) {
@@ -25,7 +27,7 @@ d3.json(API_quakes, function (geoJson) {
 
             }
         },
-
+//popup describing time and date of the earthquake
         onEachFeature: function (feature, layer) {
             layer.bindPopup(
                 "<h4 style='text-align:center;'>" + new Date(feature.properties.time) +
@@ -36,7 +38,7 @@ d3.json(API_quakes, function (geoJson) {
 });
 
 var plateBoundary = new L.LayerGroup();
-
+//GeoJSON layer containing the features array 
 d3.json(API_plates, function (geoJson) {
     L.geoJSON(geoJson.features, {
         style: function (geoJsonFeature) {
@@ -64,23 +66,23 @@ function Color(magnitude) {
         return 'lightgreen'
     }
 };
-
+//eartquakes layer to createMap function 
 function createMap() {
-
+//defining highcontrast map
     var highContrastMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
         id: 'mapbox.high-contrast',
         accessToken: 'pk.eyJ1Ijoib2xhd3JlbmNlNzk5IiwiYSI6ImNqZXZvcTBmdDBuY3oycXFqZThzbjc5djYifQ.-ChNrBxEIvInNJWiHX5pXg'
     });
-
+//defining street map
     var streetMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
         id: 'mapbox.streets',
         accessToken: 'pk.eyJ1Ijoib2xhd3JlbmNlNzk5IiwiYSI6ImNqZXZvcTBmdDBuY3oycXFqZThzbjc5djYifQ.-ChNrBxEIvInNJWiHX5pXg'
     });
-
+//defining dark map
     var darkMap = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
@@ -88,7 +90,7 @@ function createMap() {
         accessToken: 'pk.eyJ1Ijoib2xhd3JlbmNlNzk5IiwiYSI6ImNqZXZvcTBmdDBuY3oycXFqZThzbjc5djYifQ.-ChNrBxEIvInNJWiHX5pXg'
     });
 
-
+//defining satellite
     var satellite = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: 18,
@@ -96,49 +98,38 @@ function createMap() {
         accessToken: 'pk.eyJ1Ijoib2xhd3JlbmNlNzk5IiwiYSI6ImNqZXZvcTBmdDBuY3oycXFqZThzbjc5djYifQ.-ChNrBxEIvInNJWiHX5pXg'
     });
 
-
+//defining the base layers
     var baseLayers = {
         "High Contrast": highContrastMap,
         "Street": streetMap,
         "Dark": darkMap,
         "Satellite": satellite
     };
-
+//defining the overlays
     var overlays = {
         "Earthquakes": earthquakes,
         "Plate Boundaries": plateBoundary,
     };
-
+//creating the map with street map,eartquakes,plate boundary
     var mymap = L.map('mymap', {
         center: [40, -99],
         zoom: 4.3,
-        // timeDimension: true,
-        // timeDimensionOptions: {
-        //     timeInterval: "2018-04-01/2018-04-05",
-        //     period: "PT1H"
-        // },
-        // timeDimensionControl: true,
+       
         layers: [streetMap, earthquakes, plateBoundary]
     });
 
     L.control.layers(baseLayers, overlays).addTo(mymap);
-    // L.timeDimension.earthquakes.geoJson(earthquakes).addTo(mymap);
-    // L.control.timeDimension().addTo(mymap);
-    // var player = new L.TimeDimension.Player({}, timeDimension).addTo(mymap);
-
-    // var tdWmsLayer = L.timeDimension.layer.wms(wmsLayer);
-    // tdWmsLayer.addTo(map);
-
+ //creating legend
     var legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function (map) {
-
+//creating aspects of legends and boundaries for magnitude
         var div = L.DomUtil.create('div', 'info legend'),
             magnitude = [0, 1, 2, 3, 4, 5],
             labels = [];
 
         div.innerHTML += "<h4 style='margin:4px'>Magnitude</h4>"
-
+//looping through to create label with the colored square for magnitude
         for (var i = 0; i < magnitude.length; i++) {
             div.innerHTML +=
                 '<i style="background:' + Color(magnitude[i] + 1) + '"></i> ' +
